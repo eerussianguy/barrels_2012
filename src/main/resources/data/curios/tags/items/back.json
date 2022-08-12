@@ -20,6 +20,8 @@
     "tfc:ceramic/large_vessel/green",
     "tfc:ceramic/large_vessel/red",
     "tfc:ceramic/large_vessel/black",
-    "#tfc:anvils"
+    "#tfc:anvils",
+    "#tfc:lamps",
+    "tfc:powderkeg"
   ]
 }

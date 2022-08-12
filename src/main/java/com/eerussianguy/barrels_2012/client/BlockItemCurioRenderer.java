@@ -5,13 +5,13 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.EmptyModelData;
 
@@ -74,11 +74,16 @@ public abstract class BlockItemCurioRenderer implements ICurioRenderer
             poseStack.translate(0.5f, 0.5f, 0.5f);
             poseStack.mulPose(rotation());
             poseStack.translate(-0.5f, -0.5f, -0.5f);
-            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, buffers, light, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, buffers, isFullbright(state) ? LightTexture.FULL_BRIGHT : light, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
             poseStack.popPose();
 
             poseStack.popPose();
         }
+    }
+
+    public boolean isFullbright(BlockState state)
+    {
+        return false;
     }
 
     @Nullable
