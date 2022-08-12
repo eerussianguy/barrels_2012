@@ -4,12 +4,12 @@ import java.util.Optional;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,15 +17,33 @@ import net.minecraftforge.client.model.data.EmptyModelData;
 
 import com.eerussianguy.barrels_2012.Barrels2012;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.dries007.tfc.common.blocks.devices.BarrelBlock;
-import net.dries007.tfc.common.items.BarrelBlockItem;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
+import top.theillusivec4.curios.api.SlotResult;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
 public abstract class BlockItemCurioRenderer implements ICurioRenderer
 {
+    public static ModelPart bake(String name)
+    {
+        return Minecraft.getInstance().getEntityModels().bakeLayer(Barrels2012.modelLayer(name));
+    }
+
+    public static Optional<SlotResult> getCurio(LivingEntity entity, Class<?> blockClass)
+    {
+        return CuriosApi.getCuriosHelper().findFirstCurio(entity, st -> {
+            return st.getItem() instanceof BlockItem bi && blockClass.isInstance(bi.getBlock());
+        });
+    }
+
+    public static BlockState defaultState(ItemStack item)
+    {
+        return ((BlockItem) item.getItem()).getBlock().defaultBlockState();
+    }
+
     private final BodyCurioModel<LivingEntity> model;
 
     public BlockItemCurioRenderer(BodyCurioModel<LivingEntity> model)
@@ -52,7 +70,12 @@ public abstract class BlockItemCurioRenderer implements ICurioRenderer
             ICurioRenderer.translateIfSneaking(poseStack, entity);
             ICurioRenderer.rotateIfSneaking(poseStack, entity);
 
+            poseStack.pushPose();
+            poseStack.translate(0.5f, 0.5f, 0.5f);
+            poseStack.mulPose(rotation());
+            poseStack.translate(-0.5f, -0.5f, -0.5f);
             Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, buffers, light, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
+            poseStack.popPose();
 
             poseStack.popPose();
         }
@@ -60,4 +83,9 @@ public abstract class BlockItemCurioRenderer implements ICurioRenderer
 
     @Nullable
     public abstract BlockState getBlock(LivingEntity entity, ItemStack stack);
+
+    public Quaternion rotation()
+    {
+        return Vector3f.ZP.rotationDegrees(180f);
+    }
 }

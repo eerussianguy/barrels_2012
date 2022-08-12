@@ -11,12 +11,12 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public class BodyCurioModel<T extends LivingEntity> extends HumanoidModel<T>
 {
-    public static LayerDefinition createBodyLayer(float dx, float dy, float dz)
+    public static LayerDefinition create(String parent, PartPose pose)
     {
         CubeDeformation cube = new CubeDeformation(0.4f);
         MeshDefinition mesh = HumanoidModel.createMesh(cube, 0f);
         PartDefinition part = mesh.getRoot();
-        part.getChild("body").addOrReplaceChild("thing", CubeListBuilder.create(), PartPose.offset(dx, dy, dz));
+        part.getChild(parent).addOrReplaceChild("thing", CubeListBuilder.create(), pose);
         return LayerDefinition.create(mesh, 16, 16);
     }
 
