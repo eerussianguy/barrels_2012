@@ -13,6 +13,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 
+import com.eerussianguy.barrels_2012.BarrelConfig;
 import net.dries007.tfc.common.entities.IGlow;
 import net.dries007.tfc.common.items.LampBlockItem;
 import net.dries007.tfc.util.LampFuel;
@@ -65,7 +66,7 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
                     LampFuel fuel = LampFuel.get(fluid.getFluid(), ((LampBlockItem) stack.getItem()).getBlock().defaultBlockState());
                     if (!fluid.isEmpty() && fuel != null)
                     {
-                        if (lastFuelTick == -1)
+                        if (lastFuelTick == -1 || !BarrelConfig.SERVER.enableLampBurningFuel.get())
                         {
                             resetCounter();
                             return true;
@@ -150,9 +151,15 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
     }
 
     @Override
+    public int getLightLevel()
+    {
+        return BarrelConfig.SERVER.lampBrightness.get();
+    }
+
+    @Override
     public int getLightUpdateInterval()
     {
-        return 15;
+        return BarrelConfig.SERVER.lampUpdateInterval.get();
     }
 
     @Override

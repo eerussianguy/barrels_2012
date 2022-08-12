@@ -15,6 +15,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.items.ItemStackHandler;
 
+import com.eerussianguy.barrels_2012.BarrelConfig;
 import com.eerussianguy.barrels_2012.Barrels2012;
 import net.dries007.tfc.common.blocks.devices.PowderkegBlock;
 import net.dries007.tfc.util.Helpers;
@@ -48,7 +49,7 @@ public class ForgeEvents
         {
             player.getCapability(PlayerGlowCapability.CAPABILITY).ifPresent(PlayerGlow::tick);
         }
-        if (!level.isClientSide && level.getGameTime() % 40 == 0 && player.isOnFire())
+        if (!level.isClientSide && BarrelConfig.SERVER.enablePowderkegExplosions.get() && level.getGameTime() % 40 == 0 && player.isOnFire())
         {
             CuriosApi.getCuriosHelper().findFirstCurio(player, is -> is.getItem() instanceof BlockItem bi && bi.getBlock() instanceof PowderkegBlock).ifPresent(curio -> {
                 ItemStack stack = curio.stack();

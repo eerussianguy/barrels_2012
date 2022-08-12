@@ -36,6 +36,7 @@ public class Barrels2012
         bus.addListener(this::registerCaps);
 
         ForgeEvents.init();
+        BarrelConfig.init();
 
         if (FMLEnvironment.dist == Dist.CLIENT)
         {
