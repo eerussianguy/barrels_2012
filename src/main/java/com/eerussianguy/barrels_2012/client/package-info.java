@@ -7,7 +7,7 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @FieldsAreNonnullByDefault
-package com.eerussianguy.barrels_2012;
+package com.eerussianguy.barrels_2012.client;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 

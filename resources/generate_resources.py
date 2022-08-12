@@ -1,8 +1,6 @@
 from mcresources import ResourceManager
 import assets
-import recipes
 import data
-import world_gen
 
 
 def main():
@@ -14,6 +12,7 @@ def main():
 
 def generate_all(rm: ResourceManager):
     assets.generate(rm)
+    data.generate(rm)
 
     rm.flush()
 
