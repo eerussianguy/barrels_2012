@@ -12,10 +12,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import com.eerussianguy.barrels_2012.Barrels2012;
 import net.dries007.tfc.common.blocks.LargeVesselBlock;
-import net.dries007.tfc.common.blocks.devices.AnvilBlock;
-import net.dries007.tfc.common.blocks.devices.BarrelBlock;
-import net.dries007.tfc.common.blocks.devices.LampBlock;
-import net.dries007.tfc.common.blocks.devices.PowderkegBlock;
+import net.dries007.tfc.common.blocks.devices.*;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
@@ -51,6 +48,10 @@ public class ClientEvents
             {
                 regCurio(block, PowderkegCurioRenderer::new);
             }
+            else if (block instanceof CrucibleBlock)
+            {
+                regCurio(block, CrucibleCurioRenderer::new);
+            }
         }
     }
 
@@ -71,11 +72,17 @@ public class ClientEvents
 
     private static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event)
     {
-        event.registerLayerDefinition(Barrels2012.modelLayer("barrel"), () -> BodyCurioModel.create("body", PartPose.offset(-8f, 0f, 0f)));
-        event.registerLayerDefinition(Barrels2012.modelLayer("powderkeg"), () -> BodyCurioModel.create("body", PartPose.offset(-8f, 0f, 2f)));
-        event.registerLayerDefinition(Barrels2012.modelLayer("vessel"), () -> BodyCurioModel.create("body", PartPose.offset(-8f, -5f, 0f)));
-        event.registerLayerDefinition(Barrels2012.modelLayer("anvil"), () -> BodyCurioModel.create("body", PartPose.offset(-8f, -4f, 2f)));
-        event.registerLayerDefinition(Barrels2012.modelLayer("lamp"), () -> BodyCurioModel.create("body", PartPose.offset(-8f, -8f, -3f)));
+        bodyLayer(event, "barrel", "body", PartPose.offset(-8f, 0f, 0f));
+        bodyLayer(event, "powderkeg", "body", PartPose.offset(-8f, 0f, 2f));
+        bodyLayer(event, "vessel", "body", PartPose.offset(-8f, -5f, 0f));
+        bodyLayer(event, "anvil", "body", PartPose.offset(-8f, -4f, 2f));
+        bodyLayer(event, "lamp", "body", PartPose.offset(-8f, -8f, -3f));
+        bodyLayer(event, "crucible", "body", PartPose.offset(-8f, 0f, 2f));
+    }
+
+    private static void bodyLayer(EntityRenderersEvent.RegisterLayerDefinitions event, String name, String parent, PartPose pose)
+    {
+        event.registerLayerDefinition(Barrels2012.modelLayer(name), () -> BodyCurioModel.create(parent, pose));
     }
 
 }

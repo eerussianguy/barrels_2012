@@ -22,6 +22,7 @@
     "tfc:ceramic/large_vessel/black",
     "#tfc:anvils",
     "#tfc:lamps",
-    "tfc:powderkeg"
+    "tfc:powderkeg",
+    "tfc:crucible"
   ]
 }
