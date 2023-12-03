@@ -1,5 +1,6 @@
 package com.eerussianguy.barrels_2012.common;
 
+import com.eerussianguy.barrels_2012.Barrels2012;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -10,17 +11,19 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 
 import com.eerussianguy.barrels_2012.BarrelConfig;
+
+import net.dries007.tfc.common.capabilities.Capabilities;
 import net.dries007.tfc.common.entities.IGlow;
 import net.dries007.tfc.common.items.LampBlockItem;
 import net.dries007.tfc.util.LampFuel;
 import net.dries007.tfc.util.calendar.Calendars;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.SlotResult;
+
 
 public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
 {
@@ -29,7 +32,7 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
         player.getCapability(PlayerGlowCapability.CAPABILITY).ifPresent(cap -> {
             cap.resetCounter();
             // noinspection deprecation
-            if (player.level.isAreaLoaded(cap.lightPos, 2))
+            if (player.level().isAreaLoaded(cap.lightPos, 2))
             {
                 cap.tryRemoveLight();
             }
@@ -57,35 +60,12 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
     {
         if (player.tickCount % this.getLightUpdateInterval() == 0)
         {
-            final boolean placeLight = CuriosApi.getCuriosHelper().findFirstCurio(player, s -> {
-                return s.getItem() instanceof LampBlockItem;
-            }).map(curio -> {
-                final ItemStack stack = curio.stack();
-                return stack.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY).map(cap -> {
-                    FluidStack fluid = cap.getFluidInTank(0);
-                    LampFuel fuel = LampFuel.get(fluid.getFluid(), ((LampBlockItem) stack.getItem()).getBlock().defaultBlockState());
-                    if (!fluid.isEmpty() && fuel != null)
-                    {
-                        if (lastFuelTick == -1 || !BarrelConfig.SERVER.enableLampBurningFuel.get())
-                        {
-                            resetCounter();
-                            return true;
-                        }
-                        final int usage = Mth.floor(getTicksSinceFuelUpdate() / (double) fuel.getBurnRate());
-                        if (usage >= 1)
-                        {
-                            FluidStack used = cap.drain(usage, IFluidHandler.FluidAction.EXECUTE);
-                            if (used.isEmpty() || used.getAmount() < usage)
-                            {
-                                return false;
-                            }
-                            resetCounter();
-                        }
-                        return true;
-                    }
-                    return false;
-                }).orElse(false);
-            }).orElse(false);
+            boolean placeLight = false;
+            final SlotResult curio = Barrels2012.getCurio(player, st -> st.getItem() instanceof LampBlockItem);
+            if (curio != null)
+            {
+                placeLight = tickInternal(curio);
+            }
             if (placeLight)
             {
                 lit = true;
@@ -103,14 +83,43 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
         }
     }
 
+    private boolean tickInternal(SlotResult curio)
+    {
+        final ItemStack stack = curio.stack();
+        return stack.getCapability(Capabilities.FLUID_ITEM).map(cap -> {
+            FluidStack fluid = cap.getFluidInTank(0);
+            LampFuel fuel = LampFuel.get(fluid.getFluid(), ((LampBlockItem) stack.getItem()).getBlock().defaultBlockState());
+            if (!fluid.isEmpty() && fuel != null)
+            {
+                if (lastFuelTick == -1 || !BarrelConfig.SERVER.enableLampBurningFuel.get())
+                {
+                    resetCounter();
+                    return true;
+                }
+                final int usage = Mth.floor(getTicksSinceFuelUpdate() / (double) fuel.getBurnRate());
+                if (usage >= 1)
+                {
+                    FluidStack used = cap.drain(usage, IFluidHandler.FluidAction.EXECUTE);
+                    if (used.isEmpty() || used.getAmount() < usage)
+                    {
+                        return false;
+                    }
+                    resetCounter();
+                }
+                return true;
+            }
+            return false;
+        }).orElse(false);
+    }
+
     private void resetCounter()
     {
-        lastFuelTick = Calendars.get(player.level).getTicks();
+        lastFuelTick = Calendars.get(player.level()).getTicks();
     }
 
     private long getTicksSinceFuelUpdate()
     {
-        return Calendars.get(player.level).getTicks() - lastFuelTick;
+        return Calendars.get(player.level()).getTicks() - lastFuelTick;
     }
 
     @NotNull

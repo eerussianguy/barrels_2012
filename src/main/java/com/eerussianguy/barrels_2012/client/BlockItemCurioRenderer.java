@@ -2,24 +2,25 @@ package com.eerussianguy.barrels_2012.client;
 
 import java.util.Optional;
 
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.EmptyModelData;
 
 import com.eerussianguy.barrels_2012.Barrels2012;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.SlotResult;
@@ -34,9 +35,7 @@ public abstract class BlockItemCurioRenderer implements ICurioRenderer
 
     public static Optional<SlotResult> getCurio(LivingEntity entity, Class<?> blockClass)
     {
-        return CuriosApi.getCuriosHelper().findFirstCurio(entity, st -> {
-            return st.getItem() instanceof BlockItem bi && blockClass.isInstance(bi.getBlock());
-        });
+        return Optional.ofNullable(Barrels2012.getCurio(entity, st -> st.getItem() instanceof BlockItem bi && blockClass.isInstance(bi.getBlock())));
     }
 
     public static BlockState defaultState(ItemStack item)
@@ -74,7 +73,7 @@ public abstract class BlockItemCurioRenderer implements ICurioRenderer
             poseStack.translate(0.5f, 0.5f, 0.5f);
             poseStack.mulPose(rotation());
             poseStack.translate(-0.5f, -0.5f, -0.5f);
-            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, buffers, isFullbright(state) ? LightTexture.FULL_BRIGHT : light, OverlayTexture.NO_OVERLAY, EmptyModelData.INSTANCE);
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(state, poseStack, buffers, isFullbright(state) ? LightTexture.FULL_BRIGHT : light, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, RenderType.cutout());
             poseStack.popPose();
 
             poseStack.popPose();
@@ -89,8 +88,8 @@ public abstract class BlockItemCurioRenderer implements ICurioRenderer
     @Nullable
     public abstract BlockState getBlock(LivingEntity entity, ItemStack stack);
 
-    public Quaternion rotation()
+    public Quaternionf rotation()
     {
-        return Vector3f.ZP.rotationDegrees(180f);
+        return Axis.ZP.rotationDegrees(180f);
     }
 }

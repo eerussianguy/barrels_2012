@@ -9,7 +9,7 @@ import com.eerussianguy.barrels_2012.Barrels2012;
 import net.dries007.tfc.common.blocks.devices.BarrelBlock;
 import net.dries007.tfc.common.items.BarrelBlockItem;
 import org.jetbrains.annotations.Nullable;
-import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.SlotResult;
 
 public class BarrelCurioRenderer extends BlockItemCurioRenderer
 {
@@ -22,8 +22,11 @@ public class BarrelCurioRenderer extends BlockItemCurioRenderer
     @Nullable
     public BlockState getBlock(LivingEntity entity, ItemStack stack)
     {
-        return CuriosApi.getCuriosHelper().findFirstCurio(entity, st -> st.getItem() instanceof BarrelBlockItem).map(curio -> {
-            return defaultState(stack).setValue(BarrelBlock.SEALED, Barrels2012.isSealed(stack));
-        }).orElse(null);
+        final SlotResult curio = Barrels2012.getCurio(entity, st -> st.getItem() instanceof BarrelBlockItem);
+        if (curio != null)
+        {
+            return defaultState(curio.stack()).setValue(BarrelBlock.SEALED, Barrels2012.isSealed(stack));
+        }
+        return null;
     }
 }

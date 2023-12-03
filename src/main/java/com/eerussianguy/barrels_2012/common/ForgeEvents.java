@@ -5,12 +5,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityLeaveWorldEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.items.ItemStackHandler;
@@ -19,7 +18,7 @@ import com.eerussianguy.barrels_2012.BarrelConfig;
 import com.eerussianguy.barrels_2012.Barrels2012;
 import net.dries007.tfc.common.blocks.devices.PowderkegBlock;
 import net.dries007.tfc.util.Helpers;
-import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.SlotResult;
 
 public class ForgeEvents
 {
@@ -44,22 +43,24 @@ public class ForgeEvents
     public static void onPlayerTick(TickEvent.PlayerTickEvent event)
     {
         final Player player = event.player;
-        final Level level = player.level;
+        final Level level = player.level();
         if (event.phase == TickEvent.Phase.START && !level.isClientSide)
         {
             player.getCapability(PlayerGlowCapability.CAPABILITY).ifPresent(PlayerGlow::tick);
         }
         if (!level.isClientSide && BarrelConfig.SERVER.enablePowderkegExplosions.get() && level.getGameTime() % 40 == 0 && player.isOnFire())
         {
-            CuriosApi.getCuriosHelper().findFirstCurio(player, is -> is.getItem() instanceof BlockItem bi && bi.getBlock() instanceof PowderkegBlock).ifPresent(curio -> {
-                ItemStack stack = curio.stack();
+            final SlotResult curio = Barrels2012.getCurio(player, is -> is.getItem() instanceof BlockItem bi && bi.getBlock() instanceof PowderkegBlock);
+            if (curio != null)
+            {
+                final ItemStack stack = curio.stack();
                 if (Barrels2012.isSealed(stack))
                 {
                     final float size = getExplosionSize(stack);
                     curio.stack().shrink(1);
-                    level.explode(null, player.getX(), player.getY(0.0625D), player.getZ(), size, Explosion.BlockInteraction.BREAK);
+                    level.explode(null, player.getX(), player.getY(0.0625D), player.getZ(), size, Level.ExplosionInteraction.BLOCK);
                 }
-            });
+            }
         }
     }
 
@@ -86,10 +87,10 @@ public class ForgeEvents
         return str;
     }
 
-    public static void onPlayerLoggedOut(EntityLeaveWorldEvent event)
+    public static void onPlayerLoggedOut(EntityLeaveLevelEvent event)
     {
         final Entity entity = event.getEntity();
-        if (!entity.level.isClientSide && entity instanceof Player player)
+        if (!entity.level().isClientSide && entity instanceof Player player)
         {
             PlayerGlow.reset(player);
         }
@@ -97,8 +98,8 @@ public class ForgeEvents
 
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event)
     {
-        final Player player = event.getPlayer();
-        if (!player.level.isClientSide)
+        final Player player = event.getEntity();
+        if (!player.level().isClientSide)
         {
             PlayerGlow.reset(player);
         }
@@ -106,10 +107,10 @@ public class ForgeEvents
 
     public static void onPlayerChangeDimension(PlayerEvent.PlayerChangedDimensionEvent event)
     {
-        final Player player = event.getPlayer();
+        final Player player = event.getEntity();
         player.getCapability(PlayerGlowCapability.CAPABILITY).ifPresent(cap -> {
             // noinspection deprecation
-            if (player.level.isAreaLoaded(cap.getLightPos(), 2))
+            if (player.level().isAreaLoaded(cap.getLightPos(), 2))
             {
                 cap.tryRemoveLight();
             }

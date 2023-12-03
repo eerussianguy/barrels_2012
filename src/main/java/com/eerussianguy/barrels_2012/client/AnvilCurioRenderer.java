@@ -1,13 +1,13 @@
 package com.eerussianguy.barrels_2012.client;
 
+import com.mojang.math.Axis;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.dries007.tfc.common.blocks.devices.AnvilBlock;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 
 public class AnvilCurioRenderer extends BlockItemCurioRenderer
 {
@@ -24,10 +24,10 @@ public class AnvilCurioRenderer extends BlockItemCurioRenderer
     }
 
     @Override
-    public Quaternion rotation()
+    public Quaternionf rotation()
     {
-        Quaternion q = Vector3f.XP.rotationDegrees(-90f);
-        q.mul(Vector3f.ZP.rotationDegrees(180f));
+        Quaternionf q = Axis.XP.rotationDegrees(-90f);
+        q.mul(Axis.ZP.rotationDegrees(180f));
         return q;
     }
 }
