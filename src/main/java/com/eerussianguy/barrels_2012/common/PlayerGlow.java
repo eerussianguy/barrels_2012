@@ -56,7 +56,7 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
     }
 
     @Override
-    public void tick()
+    public void tickGlow()
     {
         if (player.tickCount % this.getLightUpdateInterval() == 0)
         {
@@ -69,7 +69,7 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
             if (placeLight)
             {
                 lit = true;
-                IGlow.super.tick();
+                IGlow.super.tickGlow();
             }
             else
             {

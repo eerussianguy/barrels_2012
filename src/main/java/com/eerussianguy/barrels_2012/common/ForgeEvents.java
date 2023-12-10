@@ -46,7 +46,7 @@ public class ForgeEvents
         final Level level = player.level();
         if (event.phase == TickEvent.Phase.START && !level.isClientSide)
         {
-            player.getCapability(PlayerGlowCapability.CAPABILITY).ifPresent(PlayerGlow::tick);
+            player.getCapability(PlayerGlowCapability.CAPABILITY).ifPresent(PlayerGlow::tickGlow);
         }
         if (!level.isClientSide && BarrelConfig.SERVER.enablePowderkegExplosions.get() && level.getGameTime() % 40 == 0 && player.isOnFire())
         {
