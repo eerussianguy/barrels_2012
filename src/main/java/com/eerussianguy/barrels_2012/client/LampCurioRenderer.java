@@ -1,11 +1,12 @@
 package com.eerussianguy.barrels_2012.client;
 
+import java.util.Optional;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 import net.dries007.tfc.common.blocks.devices.LampBlock;
-import net.dries007.tfc.common.capabilities.Capabilities;
+import net.dries007.tfc.common.capabilities.ItemCapabilities;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +22,7 @@ public class LampCurioRenderer extends BlockItemCurioRenderer
     public BlockState getBlock(LivingEntity entity, ItemStack stack)
     {
         return getCurio(entity, LampBlock.class).map(curio -> {
-            final boolean lit = stack.getCapability(Capabilities.FLUID_ITEM).filter(cap -> !cap.getFluidInTank(0).isEmpty()).isPresent();
+            final boolean lit = Optional.ofNullable(stack.getCapability(ItemCapabilities.FLUID)).filter(cap -> !cap.getFluidInTank(0).isEmpty()).isPresent();
             return defaultState(stack).setValue(LampBlock.LIT, lit);
         }).orElse(null);
     }

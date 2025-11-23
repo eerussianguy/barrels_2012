@@ -1,24 +1,18 @@
 package com.eerussianguy.barrels_2012;
 
-import java.util.function.Function;
-
-import org.apache.commons.lang3.tuple.Pair;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
 
 import com.eerussianguy.barrels_2012.common.BarrelServerConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class BarrelConfig
 {
-    public static final BarrelServerConfig SERVER = register(ModConfig.Type.SERVER, BarrelServerConfig::new);
+    public static final BarrelServerConfig SERVER;
+    public static final ModConfigSpec SERVER_SPEC;
 
-    public static void init() {}
-
-    private static <C> C register(net.minecraftforge.fml.config.ModConfig.Type type, Function<ForgeConfigSpec.Builder, C> factory)
+    static
     {
-        Pair<C, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(factory);
-        ModLoadingContext.get().registerConfig(type, specPair.getRight());
-        return specPair.getLeft();
+        final var server = new ModConfigSpec.Builder().configure(BarrelServerConfig::new);
+        SERVER = server.getLeft();
+        SERVER_SPEC = server.getRight();
     }
 }

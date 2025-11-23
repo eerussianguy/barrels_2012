@@ -18,10 +18,9 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import com.eerussianguy.barrels_2012.Barrels2012;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
-import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.SlotResult;
 import top.theillusivec4.curios.api.client.ICurioRenderer;

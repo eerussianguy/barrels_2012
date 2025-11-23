@@ -2,57 +2,41 @@ package com.eerussianguy.barrels_2012.common;
 
 import com.eerussianguy.barrels_2012.Barrels2012;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-
 import com.eerussianguy.barrels_2012.BarrelConfig;
 
-import net.dries007.tfc.common.capabilities.Capabilities;
+import net.dries007.tfc.common.capabilities.ItemCapabilities;
 import net.dries007.tfc.common.entities.IGlow;
 import net.dries007.tfc.common.items.LampBlockItem;
-import net.dries007.tfc.util.LampFuel;
 import net.dries007.tfc.util.calendar.Calendars;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.dries007.tfc.util.data.LampFuel;
+
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import top.theillusivec4.curios.api.SlotResult;
 
-
-public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
+public class PlayerGlow implements IGlow
 {
-    public static void reset(Player player)
+    public static void reset(Player player, boolean counter)
     {
-        player.getCapability(PlayerGlowCapability.CAPABILITY).ifPresent(cap -> {
-            cap.resetCounter();
-            // noinspection deprecation
-            if (player.level().isAreaLoaded(cap.lightPos, 2))
-            {
-                cap.tryRemoveLight();
-            }
-        });
+        final PlayerGlow glow = new PlayerGlow(player);
+        if (counter)
+            glow.resetCounter();
+        if (player.level().isAreaLoaded(glow.getLightPos(), 2))
+        {
+            glow.tryRemoveLight();
+        }
     }
 
     private final Player player;
-    private final LazyOptional<PlayerGlow> capability;
-
-    private long lastFuelTick;
-    private BlockPos lightPos;
-    private boolean lit;
+    private final GlowData data;
 
     public PlayerGlow(Player player)
     {
         this.player = player;
-        this.lastFuelTick = -1;
-        this.capability = LazyOptional.of(() -> this);
-        this.lightPos = BlockPos.ZERO;
-        this.lit = false;
+        this.data = player.getData(GlowData.GLOW);
     }
 
     @Override
@@ -68,12 +52,20 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
             }
             if (placeLight)
             {
-                lit = true;
+                if (!data.isLit())
+                {
+                    data.setLit(true);
+                    markDirty();
+                }
                 IGlow.super.tickGlow();
             }
             else
             {
-                lit = false;
+                if (data.isLit())
+                {
+                    data.setLit(false);
+                    markDirty();
+                }
                 resetCounter();
                 if (initialized())
                 {
@@ -86,77 +78,60 @@ public class PlayerGlow implements ICapabilitySerializable<CompoundTag>, IGlow
     private boolean tickInternal(SlotResult curio)
     {
         final ItemStack stack = curio.stack();
-        return stack.getCapability(Capabilities.FLUID_ITEM).map(cap -> {
-            FluidStack fluid = cap.getFluidInTank(0);
-            LampFuel fuel = LampFuel.get(fluid.getFluid(), ((LampBlockItem) stack.getItem()).getBlock().defaultBlockState());
-            if (!fluid.isEmpty() && fuel != null)
+        final var cap = stack.getCapability(ItemCapabilities.FLUID);
+        if (cap == null)
+            return false;
+        final FluidStack fluid = cap.getFluidInTank(0);
+        final LampFuel fuel = LampFuel.get(fluid.getFluid(), ((LampBlockItem) stack.getItem()).getBlock().defaultBlockState());
+        if (!fluid.isEmpty() && fuel != null)
+        {
+            if (data.getFuelTick() == -1 || !BarrelConfig.SERVER.enableLampBurningFuel.get())
             {
-                if (lastFuelTick == -1 || !BarrelConfig.SERVER.enableLampBurningFuel.get())
-                {
-                    resetCounter();
-                    return true;
-                }
-                final int usage = Mth.floor(getTicksSinceFuelUpdate() / (double) fuel.getBurnRate());
-                if (usage >= 1)
-                {
-                    FluidStack used = cap.drain(usage, IFluidHandler.FluidAction.EXECUTE);
-                    if (used.isEmpty() || used.getAmount() < usage)
-                    {
-                        return false;
-                    }
-                    resetCounter();
-                }
+                resetCounter();
                 return true;
             }
-            return false;
-        }).orElse(false);
+            final int usage = Mth.floor(getTicksSinceFuelUpdate() / (double) fuel.burnRate());
+            if (usage >= 1)
+            {
+                FluidStack used = cap.drain(usage, IFluidHandler.FluidAction.EXECUTE);
+                if (used.isEmpty() || used.getAmount() < usage)
+                {
+                    return false;
+                }
+                resetCounter();
+            }
+            return true;
+        }
+        return false;
     }
 
     private void resetCounter()
     {
-        lastFuelTick = Calendars.get(player.level()).getTicks();
+        data.setFuelTick(Calendars.get(player.level()).getTicks());
+        markDirty();
     }
 
     private long getTicksSinceFuelUpdate()
     {
-        return Calendars.get(player.level()).getTicks() - lastFuelTick;
-    }
-
-    @NotNull
-    @Override
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side)
-    {
-        return cap == PlayerGlowCapability.CAPABILITY ? capability.cast() : LazyOptional.empty();
-    }
-
-    @Override
-    public CompoundTag serializeNBT()
-    {
-        final CompoundTag nbt = new CompoundTag();
-        saveLight(nbt);
-        nbt.putLong("fuelTick", lastFuelTick);
-        nbt.putBoolean("lit", lit);
-        return nbt;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt)
-    {
-        readLight(nbt);
-        lastFuelTick = nbt.getLong("fuelTick");
-        lit = nbt.getBoolean("lit");
+        return Calendars.get(player.level()).getTicks() - data.getFuelTick();
     }
 
     @Override
     public void setLightPos(BlockPos blockPos)
     {
-        lightPos = blockPos;
+        data.setLightPos(blockPos);
+        markDirty();
+    }
+
+    private void markDirty()
+    {
+        player.setData(GlowData.GLOW, data);
     }
 
     @Override
     public BlockPos getLightPos()
     {
-        return lightPos;
+        return data.getLightPos();
     }
 
     @Override

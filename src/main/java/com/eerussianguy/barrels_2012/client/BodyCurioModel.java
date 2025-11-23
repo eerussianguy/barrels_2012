@@ -7,7 +7,6 @@ import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.world.entity.LivingEntity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public class BodyCurioModel<T extends LivingEntity> extends HumanoidModel<T>
 {
@@ -33,9 +32,4 @@ public class BodyCurioModel<T extends LivingEntity> extends HumanoidModel<T>
         thingHolder.translateAndRotate(poseStack);
     }
 
-    @Override
-    public void renderToBuffer(PoseStack pPoseStack, VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha)
-    {
-
-    }
 }

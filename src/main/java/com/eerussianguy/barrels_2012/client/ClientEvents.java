@@ -3,16 +3,17 @@ package com.eerussianguy.barrels_2012.client;
 import java.util.function.Supplier;
 
 import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import com.eerussianguy.barrels_2012.Barrels2012;
 import net.dries007.tfc.common.blocks.LargeVesselBlock;
 import net.dries007.tfc.common.blocks.devices.*;
+
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
@@ -26,7 +27,7 @@ public class ClientEvents
 
     private static void setup(FMLClientSetupEvent event)
     {
-        for (Block block : ForgeRegistries.BLOCKS.getValues())
+        for (Block block : BuiltInRegistries.BLOCK)
         {
             if (block instanceof BarrelBlock)
             {
@@ -63,11 +64,6 @@ public class ClientEvents
     private static void regCurio(Item item, Supplier<ICurioRenderer> rendererSupplier)
     {
         CuriosRendererRegistry.register(item, rendererSupplier);
-    }
-
-    private static void regCurio(Supplier<Block> supplier, Supplier<ICurioRenderer> rendererSupplier)
-    {
-        CuriosRendererRegistry.register(supplier.get().asItem(), rendererSupplier);
     }
 
     private static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event)

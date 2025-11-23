@@ -2,20 +2,20 @@ package com.eerussianguy.barrels_2012.common;
 
 import java.util.function.Function;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
 public class BarrelServerConfig
 {
-    public final ForgeConfigSpec.BooleanValue enablePowderkegExplosions;
-    public final ForgeConfigSpec.BooleanValue enableLampBurningFuel;
-    public final ForgeConfigSpec.IntValue lampBrightness;
-    public final ForgeConfigSpec.IntValue lampUpdateInterval;
+    public final ModConfigSpec.BooleanValue enablePowderkegExplosions;
+    public final ModConfigSpec.BooleanValue enableLampBurningFuel;
+    public final ModConfigSpec.IntValue lampBrightness;
+    public final ModConfigSpec.IntValue lampUpdateInterval;
 
-    public BarrelServerConfig(ForgeConfigSpec.Builder innerBuilder)
+    public BarrelServerConfig(ModConfigSpec.Builder innerBuilder)
     {
-        Function<String, ForgeConfigSpec.Builder> builder = name -> innerBuilder.translation(MOD_ID + ".config.server." + name);
+        Function<String, ModConfigSpec.Builder> builder = name -> innerBuilder.translation(MOD_ID + ".config.server." + name);
 
         innerBuilder.push("general");
 
